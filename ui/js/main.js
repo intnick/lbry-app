@@ -27,6 +27,14 @@ const {remote, ipcRenderer, shell} = require('electron');
 const contextMenu = remote.require('./menu/context-menu');
 const app = require('./app')
 
+window.__ = require('y18n')({directory: 'app/locales'}).__;
+/*const i18n = require('y18n');
+i18n.configure({
+    defaultLocale: 'en',
+    directory: 'app/locales'
+});
+window.__ = i18n.__;*/
+
 lbry.showMenuIfNeeded();
 
 window.addEventListener('contextmenu', (event) => {
