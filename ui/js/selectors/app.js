@@ -1,5 +1,6 @@
 import { createSelector } from "reselect";
 import { parseQueryParams } from "util/query_params";
+import lbry from "lbry";
 import lbryuri from "lbryuri";
 
 export const _selectState = state => state.app || {};
@@ -31,17 +32,25 @@ export const selectPageTitle = createSelector(
   (page, params) => {
     switch (page) {
       case "settings":
-      case "help":
+        return __("Settings");
       case "report":
+        return __("Report");
       case "wallet":
+        return __("Wallet");
       case "send":
+        return __("Send");
       case "receive":
+        return __("Receive");
       case "rewards":
+        return __("Rewards");
       case "start":
+        return __("Start");
       case "publish":
+        return __("Publish");
       case "help":
+        return __("Help");
       case "developer":
-        return __(page.charAt(0).toUpperCase() + page.slice(1));
+        return __("Developer");
       case "search":
         return params.query
           ? __("Search results for %s", params.query)
@@ -168,11 +177,6 @@ export const selectDaemonReady = createSelector(
   state => state.daemonReady
 );
 
-export const selectObscureNsfw = createSelector(
-  _selectState,
-  state => !!state.obscureNsfw
-);
-
 export const selectSnackBar = createSelector(
   _selectState,
   state => state.snackBar || {}
@@ -181,4 +185,9 @@ export const selectSnackBar = createSelector(
 export const selectSnackBarSnacks = createSelector(
   selectSnackBar,
   snackBar => snackBar.snacks || []
+);
+
+export const selectBadgeNumber = createSelector(
+  _selectState,
+  state => state.badgeNumber
 );

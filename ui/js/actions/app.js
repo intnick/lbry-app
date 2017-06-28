@@ -12,7 +12,6 @@ import {
 import { doSearch } from "actions/search";
 import { doFetchDaemonSettings } from "actions/settings";
 import { doAuthenticate } from "actions/user";
-import { doRewardList } from "actions/rewards";
 import { doFileList } from "actions/file_info";
 
 const { remote, ipcRenderer, shell } = require("electron");
@@ -62,17 +61,16 @@ export function doChangePath(path) {
 
 export function doHistoryBack() {
   return function(dispatch, getState) {
+    if (!history.state) return;
+
     history.back();
   };
 }
 
 export function doHistoryPush(params, title, relativeUrl) {
   return function(dispatch, getState) {
-    let pathParts = window.location.pathname.split("/");
-    pathParts[pathParts.length - 1] = relativeUrl.replace(/^\//, "");
-    const url = pathParts.join("/");
     title += " - LBRY";
-    history.pushState(params, title, url);
+    history.pushState(params, title, `#${relativeUrl}`);
   };
 }
 

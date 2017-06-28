@@ -1,15 +1,25 @@
 import * as types from "constants/action_types";
 import lbry from "lbry";
 
+const currentPath = () => {
+  const hash = document.location.hash;
+  if (hash !== "") return hash.split("#")[1];
+  else return "/discover";
+};
+
+const { remote } = require("electron");
+const application = remote.app;
+const win = remote.BrowserWindow.getFocusedWindow();
+
 const reducers = {};
 const defaultState = {
   isLoaded: false,
-  currentPath: "discover",
+  currentPath: currentPath(),
   platform: process.platform,
   upgradeSkipped: sessionStorage.getItem("upgradeSkipped"),
   daemonReady: false,
-  obscureNsfw: !lbry.getClientSetting("showNsfw"),
   hasSignature: false,
+  badgeNumber: 0,
 };
 
 reducers[types.DAEMON_READY] = function(state, action) {
@@ -111,6 +121,23 @@ reducers[types.REMOVE_SNACKBAR_SNACK] = function(state, action) {
 
   return Object.assign({}, state, {
     snackBar: newSnackBar,
+  });
+};
+
+reducers[types.DOWNLOADING_COMPLETED] = function(state, action) {
+  const badgeNumber = state.badgeNumber;
+
+  // Don't update the badge number if the window is focused
+  if (win.isFocused()) return Object.assign({}, state);
+
+  return Object.assign({}, state, {
+    badgeNumber: badgeNumber + 1,
+  });
+};
+
+reducers[types.WINDOW_FOCUSED] = function(state, action) {
+  return Object.assign({}, state, {
+    badgeNumber: 0,
   });
 };
 

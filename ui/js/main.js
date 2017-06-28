@@ -9,6 +9,8 @@ import SplashScreen from "component/splash.js";
 import AuthOverlay from "component/authOverlay";
 import { doChangePath, doNavigate, doDaemonReady } from "actions/app";
 import { toQueryString } from "util/query_params";
+import { selectBadgeNumber } from "selectors/app";
+import * as types from "constants/action_types";
 
 const env = ENV;
 const { remote, ipcRenderer, shell } = require("electron");
@@ -28,19 +30,20 @@ window.addEventListener("contextmenu", event => {
 });
 
 window.addEventListener("popstate", (event, param) => {
-  const params = event.state;
-  const pathParts = document.location.pathname.split("/");
-  const route = "/" + pathParts[pathParts.length - 1];
-  const queryString = toQueryString(params);
+  event.preventDefault();
 
+  const hash = document.location.hash;
   let action;
-  if (route.match(/html$/)) {
-    action = doChangePath("/discover");
-  } else {
-    action = doChangePath(`${route}?${queryString}`);
-  }
 
-  app.store.dispatch(action);
+  if (hash !== "") {
+    const url = hash.split("#")[1];
+    const params = event.state;
+    const queryString = toQueryString(params);
+
+    app.store.dispatch(doChangePath(`${url}?${queryString}`));
+  } else {
+    app.store.dispatch(doChangePath("/discover"));
+  }
 });
 
 ipcRenderer.on("open-uri-requested", (event, uri) => {
@@ -69,6 +72,28 @@ document.addEventListener("click", event => {
     target = target.parentNode;
   }
 });
+
+const application = remote.app;
+const dock = application.dock;
+const win = remote.getCurrentWindow();
+
+// Tear down previous event listeners when reload
+win.removeAllListeners();
+
+// Clear the badge when the window is focused
+win.on("focus", () => {
+  if (!dock) return;
+
+  app.store.dispatch({ type: types.WINDOW_FOCUSED });
+  dock.setBadge("");
+});
+
+const updateProgress = () => {
+  const state = app.store.getState();
+  const progress = selectTotalDownloadProgress(state);
+
+  win.setProgressBar(progress || -1);
+};
 
 const initialState = app.store.getState();
 
